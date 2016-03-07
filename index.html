@@ -10,120 +10,122 @@
 	<video id="video" style="display:none;" muted autoplay></video>
 
 	<script type="text/javascript">
-		var TO_RADIANS = Math.PI / 180.0;
-		var TO_DEGREES = 180.0 / Math.PI;
 
-		var HORIZONTAL_FOV = 63.5;
-		var VERTICAL_FOV = 50;
-		var BACK = 'environment';
+	var TO_RADIANS = Math.PI / 180.0;
+	var TO_DEGREES = 180.0 / Math.PI;
 
-		var DRAW_COLOR = "#3ded2d";
+	var HORIZONTAL_FOV = 63.5;
+	var VERTICAL_FOV = 50;
+	var BACK = 'environment';
 
-		var horizon = 0;
-		var bank = 0;
+	var DRAW_COLOR = "#3ded2d";
 
-		window.addEventListener("deviceorientation", handleOrientationChanged, true);
+	var pitch = 0;
+	var roll = 0;
 
-		var canvas = document.getElementById("canvas");
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
+	window.addEventListener("deviceorientation", handleOrientationChanged, true);
 
-		var ctx = canvas.getContext("2d");
+	var canvas = document.getElementById("canvas");
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
 
-		var video = document.getElementById("video");
-		video.addEventListener("play", handleVideoStarted, true);
+	var ctx = canvas.getContext("2d");
 
-		navigator.getUserMedia = navigator.getUserMedia || 
-								 navigator.webkitGetUserMedia || 
-								 navigator.mozGetUserMedia;
+	var video = document.getElementById("video");
+	video.addEventListener("play", handleVideoStarted, true);
 
-		if (navigator.getUserMedia) {
-			MediaStreamTrack.getSources(getStreamSources);
-		}
+	navigator.getUserMedia = navigator.getUserMedia || 
+							 navigator.webkitGetUserMedia || 
+							 navigator.mozGetUserMedia;
 
-		draw();
+	if (navigator.getUserMedia) {
+		MediaStreamTrack.getSources(getStreamSources);
+	}
 
-		function getStreamSources(sources){
-			var cameraId = 0;
+	function getStreamSources(sources){
+		var cameraId = 0;
 
-			for (var i = 0; i < sources.length; i++) {
-    			if (sources[i].kind === 'video') {
-	    			if (sources[i].facing === BACK) {
-						cameraId = sources[i].id;
-					}
+		for (var i = 0; i < sources.length; i++) {
+			if (sources[i].kind === 'video') {
+    			if (sources[i].facing === BACK) {
+					cameraId = sources[i].id;
 				}
 			}
-
-			var constraints = {
-				video: {
-					optional: [{ sourceId: cameraId }]
-				}
-			};
-
-			navigator.getUserMedia(constraints, videoSuccess, videoError);
 		}
 
-		function videoSuccess(stream) {
-			video.src = window.URL.createObjectURL(stream);
-			video.play();
-		}
-
-		function videoError(error) {
-			console.log('navigator.getUserMedia error: ', error);
-		}
-
-		function handleVideoStarted() {
-			canvas.width = video.videoWidth;
-			canvas.height = video.videoHeight;
+		var constraints = {
+			video: {
+				optional: [{ sourceId: cameraId }]
+			}
 		};
 
-		function handleOrientationChanged(event) {
-			horizon = -event.gamma;
-			bank = -event.beta;
+		navigator.getUserMedia(constraints, videoSuccess, videoError);
+	}
 
-			if (horizon > 0) {
-				horizon = horizon - 90;
-			} else {
-				horizon = horizon + 90;
-			}
+	function videoSuccess(stream) {
+		video.src = window.URL.createObjectURL(stream);
+		video.play();
+	}
 
-			if (horizon > 0) {
-				if (bank > 0) {
-					bank = -bank + 180;
-				} else {
-					bank = -bank - 180;
-				}
-			}
+	function videoError(error) {
+		console.log('navigator.getUserMedia error: ', error);
+	}
+
+	function handleVideoStarted() {
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+	};
+
+	function handleOrientationChanged(event) {
+		pitch = -event.gamma;
+		roll = -event.beta;
+
+		if (pitch > 0) {
+			pitch = pitch - 90;
+		} else {
+			pitch = pitch + 90;
 		}
 
-		function draw(timeStamp) {
-			requestAnimationFrame(draw);
-
-			if (navigator.getUserMedia) {
-				ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+		if (pitch > 0) {
+			if (roll > 0) {
+				roll = -roll + 180;
 			} else {
-				ctx.clearRect(0, 0, canvas.width, canvas.height);				
+				roll = -roll - 180;
 			}
-
-			ctx.font = "1.5rem sans-serif";
-			ctx.fillStyle = DRAW_COLOR;
-			ctx.strokeStyle = DRAW_COLOR;
-			ctx.textAlign = "right";
-
-			ctx.fillText(horizon.toFixed(1), canvas.width*0.95, canvas.height/2);
-			ctx.fillText(bank.toFixed(1), canvas.width/2, canvas.height*0.95);
-
-			var hPixPerDegree = canvas.width / HORIZONTAL_FOV;
-			var vPixPerDegree = canvas.height / VERTICAL_FOV;
-
-			var rcos = 0.25 * canvas.width * Math.cos(bank*TO_RADIANS);
-			var rsin = 0.25 * canvas.width * Math.sin(bank*TO_RADIANS);
-
-			ctx.beginPath();
-				ctx.moveTo(canvas.width/2 - rcos, horizon * vPixPerDegree + canvas.height/2 - rsin);
-				ctx.lineTo(canvas.width/2 + rcos, horizon * vPixPerDegree + canvas.height/2 + rsin);
-			ctx.stroke();
 		}
+	}
+
+	function draw(timeStamp) {
+		requestAnimationFrame(draw);
+
+		if (!video.paused) {
+			ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+		} else {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);				
+		}
+
+		ctx.font = "1.5rem sans-serif";
+		ctx.fillStyle = DRAW_COLOR;
+		ctx.strokeStyle = DRAW_COLOR;
+		ctx.textAlign = "right";
+
+		ctx.fillText(pitch.toFixed(1), canvas.width*0.95, canvas.height/2);
+		ctx.fillText(roll.toFixed(1), canvas.width/2, canvas.height*0.95);
+
+		var hPixPerDegree = canvas.width / HORIZONTAL_FOV;
+		var vPixPerDegree = canvas.height / VERTICAL_FOV;
+
+		var rcos = 0.25 * canvas.width * Math.cos(roll*TO_RADIANS);
+		var rsin = 0.25 * canvas.width * Math.sin(roll*TO_RADIANS);
+
+		ctx.beginPath();
+			ctx.moveTo(canvas.width/2 - rcos, pitch * vPixPerDegree + canvas.height/2 - rsin);
+			ctx.lineTo(canvas.width/2 + rcos, pitch * vPixPerDegree + canvas.height/2 + rsin);
+		ctx.stroke();
+	}
+
+	draw();
+
 	</script>
 </body>
 </html>
