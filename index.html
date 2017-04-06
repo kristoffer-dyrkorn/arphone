@@ -6,9 +6,8 @@
 	<meta name="viewport" content="width=device-width" />
 </head>
 <body style="background-color:black;">
-	<canvas id="canvas" style="margin:auto; display:block;"></canvas>
-	<video id="video" style="display:none;" muted autoplay></video>
-
+	<canvas id="canvas" style="margin:auto; display:block;" />
+	<video id="video" style="display:none;" muted />
 	<script type="text/javascript">
 
 	var TO_RADIANS = Math.PI / 180.0;
@@ -16,7 +15,6 @@
 
 	var HORIZONTAL_FOV = 63.5;
 	var VERTICAL_FOV = 50;
-	var BACK = 'environment';
 
 	var DRAW_COLOR = "#3ded2d";
 
@@ -31,50 +29,42 @@
 
 	var ctx = canvas.getContext("2d");
 
-	var video = document.getElementById("video");
-	video.addEventListener("play", handleVideoStarted, true);
+  ctx.font = "3rem sans-serif";
+  ctx.fillStyle = DRAW_COLOR;
+  ctx.strokeStyle = DRAW_COLOR;
+  ctx.textAlign = "center";
+  ctx.fillText("Touch screen to start", canvas.width/2, canvas.height/2);
 
-	navigator.getUserMedia = navigator.getUserMedia || 
-							 navigator.webkitGetUserMedia || 
-							 navigator.mozGetUserMedia;
+  var video = document.getElementById("video");
 
-	if (navigator.getUserMedia) {
-		MediaStreamTrack.getSources(getStreamSources);
-	}
+  canvas.addEventListener("click", function () {
+    video.play();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    draw();
+  });
 
-	function getStreamSources(sources){
-		var cameraId = 0;
+  navigator.mediaDevices.enumerateDevices()
+    .then(devices =>
+      devices.filter(device => device.label.includes("back")))
+    .then(cameras => {
+      console.log("Using device: " + JSON.stringify(cameras[0]));
+      startVideoStream(cameras[0]);
+    });
 
-		for (var i = 0; i < sources.length; i++) {
-			if (sources[i].kind === 'video') {
-    			if (sources[i].facing === BACK) {
-					cameraId = sources[i].id;
-				}
-			}
-		}
+  //  var constraints = { video: { facingMode: "environment" } };
+  // constraints på facingMode virker ikke, https://bugs.chromium.org/p/chromium/issues/detail?id=290161
 
-		var constraints = {
-			video: {
-				optional: [{ sourceId: cameraId }]
-			}
-		};
+  // MediaStreamTrack.getSources() er deprecated, se
+  // https://developers.google.com/web/updates/2016/12/chrome-56-deprecations#remove_mediastreamtrackgetsources
 
-		navigator.getUserMedia(constraints, videoSuccess, videoError);
-	}
-
-	function videoSuccess(stream) {
-		video.src = window.URL.createObjectURL(stream);
-		video.play();
-	}
-
-	function videoError(error) {
-		console.log('navigator.getUserMedia error: ', error);
-	}
-
-	function handleVideoStarted() {
-		canvas.width = video.videoWidth;
-		canvas.height = video.videoHeight;
-	};
+  function startVideoStream(camera) {
+    var constraints = { video: { deviceId: camera.deviceId } };
+    navigator.mediaDevices.getUserMedia(constraints)
+    .then(stream => {
+      video.src = window.URL.createObjectURL(stream)
+    });
+  };
 
 	function handleOrientationChanged(event) {
 		pitch = -event.gamma;
@@ -101,30 +91,28 @@
 		if (!video.paused) {
 			ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 		} else {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);				
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		}
 
-		ctx.font = "1.5rem sans-serif";
-		ctx.fillStyle = DRAW_COLOR;
-		ctx.strokeStyle = DRAW_COLOR;
-		ctx.textAlign = "right";
+    ctx.font = "1.5rem sans-serif";
+    ctx.fillStyle = DRAW_COLOR;
+    ctx.strokeStyle = DRAW_COLOR;
+    ctx.textAlign = "right";
 
 		ctx.fillText(pitch.toFixed(1), canvas.width*0.95, canvas.height/2);
 		ctx.fillText(roll.toFixed(1), canvas.width/2, canvas.height*0.95);
 
-		var hPixPerDegree = canvas.width / HORIZONTAL_FOV;
-		var vPixPerDegree = canvas.height / VERTICAL_FOV;
+		var horizon_x = 0.25 * canvas.width * Math.cos(roll*TO_RADIANS);
+		var horizon_y = 0.25 * canvas.width * Math.sin(roll*TO_RADIANS);
 
-		var rcos = 0.25 * canvas.width * Math.cos(roll*TO_RADIANS);
-		var rsin = 0.25 * canvas.width * Math.sin(roll*TO_RADIANS);
+		var vPixPerDegree = canvas.height / VERTICAL_FOV;
+		var pitch_offset = pitch * vPixPerDegree;
 
 		ctx.beginPath();
-			ctx.moveTo(canvas.width/2 - rcos, pitch * vPixPerDegree + canvas.height/2 - rsin);
-			ctx.lineTo(canvas.width/2 + rcos, pitch * vPixPerDegree + canvas.height/2 + rsin);
+			ctx.moveTo(canvas.width/2 - horizon_x, canvas.height/2 - horizon_y + pitch_offset);
+			ctx.lineTo(canvas.width/2 + horizon_x, canvas.height/2 + horizon_y + pitch_offset);
 		ctx.stroke();
 	}
-
-	draw();
 
 	</script>
 </body>
