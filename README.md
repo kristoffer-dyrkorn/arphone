@@ -74,7 +74,7 @@ Når du prøver å nå utviklingsmaskinen fra telefonen vil den gi deg et varsel
 
 **Remote debugging**
 
-For å kunne debugge og steppe igjennom koden på mobilen må du koble den til utviklermaskinen via ledning (USB). Om du bruker en iPhone må du laste ned og starte opp Safari 11 Technology Preview på utviklermaskinen. (Fram til Safari og iOS versjon 11 er lansert må Technology Preview-utgaven brukes). Bruker du en Android-telefon vil det være nok å starte opp Chrome på utviklermaskinen.
+For å kunne debugge og steppe igjennom koden på mobilen må du koble den til utviklermaskinen via ledning (USB). Velg "Trust this computer" dersom du får en popup med dette spørsmålet når du kobler til telefonen. Om du bruker en iPhone må du laste ned og starte opp Safari 11 Technology Preview på utviklermaskinen. (Fram til Safari og iOS versjon 11 er lansert må Technology Preview-utgaven brukes). Bruker du en Android-telefon vil det være nok å starte opp Chrome på utviklermaskinen.
 
 Deretter må du åpne for remote debugging mot telefonen din. På iPhone, velg `Settings > Safari > Advanced` og skru på "Web Inspector".
 
