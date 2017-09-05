@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sensor</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+</head>
+<body style="background-color:black;margin:0 0 100px 0;">
+  <canvas id="canvas" style="display:block;margin:auto" />
+<!--
+  iOS:
+  playsinline = true: video is shown in fullscreen but canvas is not. No overlay visible.
+  playsinline = false: canvas is visible, but browser bars remain visible
+  workaround: add 100px bottom margin to body - so page becomes scrollable. scroll away bars.
+-->
+  <video autoplay muted playsinline id="video" style="display:none;" />
+  <script type="text/javascript">
+
+  var TO_RADIANS = Math.PI / 180.0;
+  var HORIZONTAL_FOV = 64;
+  var VERTICAL_FOV = 40;
+
+	var AR_GREEN = "#3ded2d";
+
+  var pitch = 0;
+  var roll = 0;
+  var compassHeading = 0;
+  var actualHeading;
+
+	var canvas = document.getElementById("canvas");
+	var video = document.getElementById("video");
+
+  var ctx;
+  var isStreaming = false;
+
+  // iOS:
+  // screen.width and .height return pixel sizes for a fixed portrait orientation
+  // Android:
+  // window.innerWidth and .innerHeight return pixel sizes for the browser content area
+
+  var screenWidth = window.innerWidth;
+  var screenHeight = window.innerHeight;
+
+  canvas.width = screenWidth;
+  canvas.height = screenHeight;
+
+  console.log("Canvas size: " + canvas.width + " x " + canvas.height + " px");
+
+  setCanvasContext();
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillText("Touch screen", canvas.width/2, 100);
+
+  window.addEventListener("deviceorientation", updateOrientation, true);
+  video.addEventListener("playing", prepareDisplay);
+  canvas.addEventListener("click", startVideo);
+
+  getVideoStream();
+
+  function setCanvasContext() {
+    ctx = canvas.getContext("2d");
+    ctx.fillStyle = AR_GREEN;
+    ctx.strokeStyle = AR_GREEN;
+    ctx.font = "30px sans-serif";
+    ctx.lineWidth = 1.5;
+    ctx.textAlign = "center";
+  }
+
+	function startVideo() {
+      video.play();
+	}
+
+  function getVideoStream() {
+    var constraints = {
+      video: {
+        facingMode: 'environment',
+        width: 1280,
+        height: 720,
+      }
+		};
+    navigator.mediaDevices.getUserMedia(constraints)
+    .then(stream => {
+      video.srcObject = stream;
+    }).catch(error => {
+      console.log(error);
+    });
+  };
+
+	function prepareDisplay() {
+    isStreaming = true;
+
+		console.log("Video stream size: " + video.videoWidth + " x " + video.videoHeight + " px");
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+
+		if (canvas.width > screenWidth) {
+			canvas.height = video.videoHeight * screenWidth / canvas.width;
+ 			canvas.width = screenWidth;
+			console.log("Canvas scaled to: " + canvas.width + " x " + canvas.height + " px");
+		}
+
+		if (canvas.height > screenHeight) {
+			canvas.width = canvas.width * screenHeight / canvas.height;
+			canvas.height = screenHeight;
+			console.log("Canvas scaled to: " + canvas.width + " x " + canvas.height + " px");
+		}
+
+    setCanvasContext();
+    draw();
+	}
+
+  function updateOrientation(event) {
+
+    // Android: Compass directions do *not* work
+    if (event.webkitCompassHeading) {
+      if (Math.abs(event.webkitCompassHeading - compassHeading) > 0.1) {
+        compassHeading = event.webkitCompassHeading;
+        actualHeading = compassHeading + 90;
+        if (actualHeading > 360) {
+          actualHeading -= 360;
+        }
+        console.log(compassHeading + ", " + event.webkitCompassAccuracy);
+      }
+    }
+
+    pitch = -event.gamma;
+    roll = -event.beta;
+
+    if (pitch > 0) {
+      pitch = pitch - 90;
+    } else {
+      pitch = pitch + 90;
+    }
+
+    if (pitch > 0) {
+      if (roll > 0) {
+        roll = -roll + 180;
+      } else {
+        roll = -roll - 180;
+      }
+    }
+  }
+
+  function draw() {
+    requestAnimationFrame(draw);
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    if (actualHeading) {
+      ctx.fillText(actualHeading.toFixed(1), canvas.width/2, canvas.height*0.1);
+    }
+
+    ctx.fillText(pitch.toFixed(1), canvas.width*0.93, canvas.height/2);
+    ctx.fillText(roll.toFixed(1), canvas.width/2, canvas.height*0.93);
+
+    var markerLength = 0.4 * canvas.width;
+    var markerX = markerLength/2 * Math.cos(roll*TO_RADIANS);
+    var markerY = markerLength/2 * Math.sin(roll*TO_RADIANS);
+
+    var yScale = 0.5 * canvas.height / Math.sin(0.5*VERTICAL_FOV*TO_RADIANS);
+    var horizonY = yScale * Math.sin(pitch * TO_RADIANS);
+
+    ctx.beginPath();
+      ctx.moveTo(canvas.width/2 - markerX, canvas.height/2 - markerY + horizonY);
+      ctx.lineTo(canvas.width/2 + markerX, canvas.height/2 + markerY + horizonY);
+    ctx.stroke();
+  }
+
+  </script>
+</body>
+</html>
