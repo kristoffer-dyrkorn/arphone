@@ -1,10 +1,10 @@
 ARPhone: Augmented reality i en webapp på telefonen
 ==
 
-Her er to webapper som viser noen muligheter for å lage augmented reality på mobil:
+Her er to webapper som viser noen muligheter for å lage augmented reality på mobil.
 
 * Appen "sensor" tegner opp en kunstig horisont og viser orienteringen til telefonen (kompassretning, pitch og roll).
-* Appen "tracker" tegner opp en te-kanne ("Utah Teapot") oppå en fysisk markør. Markøren er en figur som du må printe ut eller vise på en skjerm for at appen skal fungere.
+* Appen "tracker" tegner opp en virtuell te-kanne (Utah Teapot) oppå en fysisk markør. Markøren er en figur som du må printe ut eller vise på en skjerm for at appen skal vise 3d-grafikken.
 
 Webappene krever Chrome versjon 59 eller nyere om du har Android og iOS11 om du har iPhone. (Fram til iOS 11 er lansert må du bruke beta-versjonen av iOS 11 dersom du har iPhone.)
 
@@ -12,7 +12,7 @@ Sensor-appen bruker HTML5-APIene WebRTC, DeviceOrientation og Canvas for å gjø
 
 ![Sensor-app på Android](images/sensorapp.jpg)
 
-Tracker-appen bruker [AR.js](https://github.com/jeromeetienne/AR.js) for å gjøre mesteparten av jobben. AR.js kan kort beskrives som en plugin til [three.js](https://threejs.org/) og koden i tracker-appen er i stor grad tatt fra en demo-applikasjon laget av [Jerome Etienne](https://twitter.com/jerome_etienne). Du vil også trenge selve [Hiro-markøren](images/Hiro.pdf) for å kunne teste applikasjonen. Markøren kommer opprinnelig fra [ArToolKit](http://www.hitl.washington.edu/artoolkit/). [Tekannen](https://en.wikipedia.org/wiki/Utah_teapot) er et klassisk eksempelobjekt i 3D-grafikk. Filen som brukes her er hentet fra [siden til Pyarelal Knowles](http://goanna.cs.rmit.edu.au/~pknowles/models.html).
+Tracker-appen bruker [AR.js](https://github.com/jeromeetienne/AR.js) for å gjøre mesteparten av jobben. AR.js er en plugin til [three.js](https://threejs.org/) for å støtte AR. Koden i tracker-appen er i stor grad tatt fra en demo-applikasjon laget av [Jerome Etienne](https://twitter.com/jerome_etienne). Du vil også trenge selve [Hiro-markøren](images/Hiro.pdf) for å kunne teste applikasjonen. Markøren kommer opprinnelig fra [ArToolKit](http://www.hitl.washington.edu/artoolkit/). [Tekannen](https://en.wikipedia.org/wiki/Utah_teapot) er en klassisk 3D-modell for å vise datagrafikk. Filen som brukes her er hentet fra [siden til Pyarelal Knowles](http://goanna.cs.rmit.edu.au/~pknowles/models.html).
 
 ![Tracker-app på iPhone](images/trackerapp.jpg)
 
@@ -23,18 +23,18 @@ Slik kan du sette opp et utviklingsmiljø for å teste ut og jobbe videre med ap
 
 **Webserver**
 
-For rask roundtrip mellom utvikling og testing trenger du en lokal webserver. Serveren må svare på forespørsler på https, dette
-er nødvendig for at nettleseren på mobilen skal åpne for bruk av WebRTC-APIet for live videostrømming.
+For rask roundtrip under utvikling og testing trenger du en lokal webserver. Serveren må svare på forespørsler på https - dette
+er nødvendig for at nettleseren på mobilen skal tillate bruk av WebRTC-APIet for live videostrømming.
 
 Se katalogen `httpserver/` for en ferdig Node-basert webserver som kan brukes. Serveren er i stor grad basert på [kode skrevet av Adrian Mejia](https://gist.github.com/amejiarosario/53afae82e18db30dadc9bc39035778e5). NB NB Serveren kan ha store sikkerhetshull. Den er kun ment for lokal utvikling.
 
 **Selv-signert sertifikat**
 
-Du må lage et selv-signert sertifikat som er bundet til utviklingsmaskinen din. Sertifikatfilene skal leses inn av webserveren. Sertifikatet kan f.eks opprettes med OpenSSL, ved å skrive denne kommandoen i et terminalvindu:
+Du må så lage et selv-signert sertifikat som er bundet til utviklingsmaskinen din. Sertifikatfilene vil bli lest inn av webserveren når den starter. Sertifikatet kan f.eks opprettes med OpenSSL, ved å skrive denne kommandoen i et terminalvindu:
 
 `openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -nodes`
 
-Du vil da få en serie spørsmål. På de fleste av dem vil det være godt nok å velge default-verdien. Unntaket er der hvor man skal angi `Common Name`. Der _må_ utviklingsmaskinens hostnavn angis. På Mac vil ting fungere om man setter inn tekststrengen i `$HOSTNAME`.
+Du vil da få en serie spørsmål. På de fleste av dem vil det være godt nok å velge default-verdien. Unntaket er der hvor man skal angi `Common Name`. Der _må_ utviklingsmaskinens hostnavn angis. På Mac vil ting fungere om man her setter inn verdien av `$HOSTNAME`.
 
 Spørsmålene kan f.eks se slik ut:
 
@@ -70,7 +70,7 @@ Om dette ikke fungerer, prøv å finne IP-adressen til utviklingsmaskinen (via k
 
 **Aksept av selv-signert sertifikat**
 
-Når du prøver å nå utviklingsmaskinen fra telefonen vil den gi deg et varsel om at identiteten til nettstedet du går mot ikke nødvendigvis er ekte. For å kunne se applikasjonene på mobilen må du bekrefte at du aksepterer at ditt egne selv-signerte sertifikat brukes.
+Når du prøver å nå utviklingsmaskinen fra telefonen vil den gi deg et varsel om at identiteten til nettstedet du går mot ikke nødvendigvis er ekte. For å kunne se applikasjonene på mobilen må du bekrefte at du aksepterer at ditt eget selv-signerte sertifikat brukes.
 
 **Remote debugging**
 
