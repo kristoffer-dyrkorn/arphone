@@ -4,6 +4,13 @@
     <title>Sensor</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <!--
+    If you pin the app to the home screen the "Allow camera access" popup
+    will not be visible when the app starts
+    -->
+    <!--
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    -->
 </head>
 <body style="background-color:black;margin:0 0 100px 0;">
   <canvas id="canvas" style="display:block;margin:auto" />
@@ -61,7 +68,7 @@
     ctx = canvas.getContext("2d");
     ctx.fillStyle = AR_GREEN;
     ctx.strokeStyle = AR_GREEN;
-    ctx.font = "30px sans-serif";
+    ctx.font = "20px sans-serif";
     ctx.lineWidth = 1.5;
     ctx.textAlign = "center";
   }
@@ -154,15 +161,21 @@
     ctx.fillText(roll.toFixed(1), canvas.width/2, canvas.height*0.93);
 
     var markerLength = 0.4 * canvas.width;
-    var markerX = markerLength/2 * Math.cos(roll*TO_RADIANS);
-    var markerY = markerLength/2 * Math.sin(roll*TO_RADIANS);
+    var endX = markerLength/2 * Math.cos(roll*TO_RADIANS);
+    var endY = markerLength/2 * Math.sin(roll*TO_RADIANS);
+
+    var startX = -endX;
+    var startY = -endY;
 
     var yScale = 0.5 * canvas.height / Math.sin(0.5*VERTICAL_FOV*TO_RADIANS);
     var horizonY = yScale * Math.sin(pitch * TO_RADIANS);
 
+    startY += horizonY;
+    endY += horizonY;
+
     ctx.beginPath();
-      ctx.moveTo(canvas.width/2 - markerX, canvas.height/2 - markerY + horizonY);
-      ctx.lineTo(canvas.width/2 + markerX, canvas.height/2 + markerY + horizonY);
+      ctx.moveTo(canvas.width/2 + startX, canvas.height/2 + startY);
+      ctx.lineTo(canvas.width/2 + endX, canvas.height/2 + endY);
     ctx.stroke();
   }
 
