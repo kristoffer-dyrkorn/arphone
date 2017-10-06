@@ -6,7 +6,7 @@ Her er to webapper som viser noen muligheter for å lage augmented reality på m
 * Appen "sensor" tegner opp en kunstig horisont og viser orienteringen til telefonen (kompassretning, pitch og roll).
 * Appen "tracker" tegner opp en virtuell te-kanne (Utah Teapot) oppå en fysisk markør. Markøren er en figur som du må printe ut eller vise på en skjerm for at appen skal vise 3d-grafikken.
 
-Webappene krever Chrome versjon 59 eller nyere om du har Android og iOS11 om du har iPhone. (Fram til iOS 11 er lansert må du bruke beta-versjonen av iOS 11 dersom du har iPhone.)
+Webappene krever Chrome versjon 59 eller nyere om du har Android og iOS11 om du har iPhone.
 
 Sensor-appen bruker HTML5-APIene WebRTC, DeviceOrientation og Canvas for å gjøre henholdsvis live videostrømming, utlesing av orienteringen av mobilen og opptegning av videostrøm med kunstig horisont oppå.
 
@@ -18,6 +18,8 @@ Tracker-appen bruker [AR.js](https://github.com/jeromeetienne/AR.js) for å gjø
 
 Oppsett for utvikling og testing av applikasjonene
 --
+
+&#x1F534;En bug i Safari på iOS11 (som fremdeles finnes i 11.0.2) gjør at dialogen for å godkjenne selv-signerte sertifikater på iPhone ikke blir vist slik den skal. Dette gjør at det inntil videre ikke går an å nå applikasjonen på en lokal utviklermaskin fra en iPhone.&#x1F534;
 
 Slik kan du sette opp et utviklingsmiljø for å teste ut og jobbe videre med applikasjonene:
 
@@ -54,7 +56,7 @@ Resultatet fra kommandoen er at filene `key.pem` og `cert.pem` blir generert. Le
 
 **Start webserveren**
 
-Start serveren ved å gå til `httpserver/` i et terminalvindu og skrive `node server.js`. Teksten
+Installer Node.js om nødvendig og start serveren ved å gå til `httpserver/` i et terminalvindu og skrive `node server.js`. Teksten
 
 <pre>Server listening on port 8443</pre>
 
@@ -68,14 +70,16 @@ Dersom du har Mac/iPhone og lar telefonen bruke samme trådløse nett som  utvik
 
 Om dette ikke fungerer, prøv å finne IP-adressen til utviklingsmaskinen (via kommandoen `ifconfig` på Mac/Linux og `ipconfig` på Windows) og oppgi den istedet. Husk på https og port 8443.
 
+NB For at man skal kunne skrive inn maskinnavnet som slutter på .local på en iPhone, og så klare å nå utviklermaskinen, må utviklermaskinen kjøre macOS sin tjeneste for deling av filer. (Dette er nytt fra og med macOS Sierra.) Gå til `System Preferences > Sharing` og skru på fildeling. NB Sjekk hvilke filer du da deler med omverdenen. Standardinnstillingen i macOS er at innholdet i `~/Public` er det som deles ut.
+
 **Aksept av selv-signert sertifikat**
 
 Når du prøver å nå utviklingsmaskinen fra telefonen vil den gi deg et varsel om at identiteten til nettstedet du går mot ikke nødvendigvis er ekte. For å kunne se applikasjonene på mobilen må du bekrefte at du aksepterer at ditt eget selv-signerte sertifikat brukes.
 
 **Remote debugging**
 
-For å kunne debugge og steppe igjennom koden på mobilen må du koble den til utviklermaskinen via ledning (USB). Velg "Trust this computer" dersom du får en popup med dette spørsmålet når du kobler til telefonen. Om du bruker en iPhone må du laste ned og starte opp Safari 11 Technology Preview på utviklermaskinen. (Fram til Safari og iOS versjon 11 er lansert må Technology Preview-utgaven brukes). Bruker du en Android-telefon vil det være nok å starte opp Chrome på utviklermaskinen.
+For å kunne debugge og steppe igjennom koden på mobilen må du koble den til utviklermaskinen via ledning (USB). Velg "Trust this computer" dersom du får en popup med dette spørsmålet når du kobler til telefonen. Om du bruker en iPhone må du starte Safari 11 på utviklermaskinen (oppgrader / last ned ved behov). Bruker du en Android-telefon vil det være nok å starte opp Chrome på utviklermaskinen.
 
-Deretter må du åpne for remote debugging mot telefonen din. På iPhone, velg `Settings > Safari > Advanced` og skru på "Web Inspector".
+Deretter må du åpne for remote debugging mot telefonen din. På iPhone, velg `Settings > Safari > Advanced` (helt nederst) og skru på "Web Inspector".
 
-Når dette er gjort skal du kunne koble deg til telefonens nettleser via nettleseren på utviklermaskinen din. I Safari, velg `Develop > (navnet på mobilen) > "Use for development"`. Deretter kan du velge `Develop > (navnet på mobilen) > (navnet på applikasjonen)`. Du kan da inspisere kode og DOM og ellers debugge som på en lokal maskin.
+Når dette er gjort skal du kunne koble deg til telefonens nettleser via nettleseren på utviklermaskinen din. I Safari, velg `Develop > (navnet på mobilen) > "Use for development"`. Deretter må du bekrefte at dette er OK på telefonen. Så kan du åpne applikasjonen (skriv inn URL på telefonen) og velge `Develop > (navnet på mobilen) > (navnet på applikasjonen)`. Du kan da inspisere kode og DOM og ellers debugge som på en lokal maskin.
