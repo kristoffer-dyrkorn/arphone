@@ -19,7 +19,9 @@ Tracker-appen bruker [AR.js](https://github.com/jeromeetienne/AR.js) for å gjø
 Oppsett for utvikling og testing av applikasjonene
 --
 
-&#x1F534;En bug i Safari på iOS11 (som fremdeles finnes i 11.0.2) gjør at dialogen for å godkjenne selv-signerte sertifikater på iPhone ikke blir vist slik den skal. Dette gjør at det inntil videre ikke går an å nå applikasjonen på en lokal utviklermaskin fra en iPhone.&#x1F534;
+&#x1F534;En bug i Safari på iOS11 (som fremdeles finnes i 11.2.2) gjør at dialogen for å godkjenne selv-signerte sertifikater på iPhone ikke blir vist slik den skal. Dette gjør at det inntil videre ikke går an å nå applikasjonen på en lokal utviklermaskin på en enkel måte fra en iPhone.
+
+En *workaround* er å åpne Safari på utviklermaskinen og starte remote debugging (se beskrivelsen nedenfor) og så velge flippen "Elements" når Safari på utviklermaskinen viser info om nettleseren på telefonen. Deretter kan du kjøre JavaScript-metoden CertificateWarningController.visitInsecureWebsite() ved å lime den inn i consollet nederst i vinduet (husk semikolon på slutten av linjen). Dette tilsvarer det å trykke på knappen som godkjenner selv-signerte sertifikater på telefonen, og du kommer videre til selve webapplikasjonen.&#x1F534;
 
 Slik kan du sette opp et utviklingsmiljø for å teste ut og jobbe videre med applikasjonene:
 
